@@ -82,31 +82,6 @@ Traditional cold emailing is time-consuming and often generic. This tool solves 
 - **BeautifulSoup4** - Web scraping and HTML parsing
 - **WebBaseLoader** - Document loading from URLs
 
-### **Development Tools**
-- **FastAPI** - API framework (for future REST API)
-- **Uvicorn** - ASGI server
-- **Python-dotenv** - Environment variable management
-
-## 🏗️ Architecture
-
-```mermaid
-graph TB
-    A[User Input URL] --> B[Web Scraper]
-    B --> C[Text Cleaner]
-    C --> D[Job Extractor LLM]
-    D --> E[Skills Extractor]
-    E --> F[ChromaDB Query]
-    F --> G[Portfolio Matcher]
-    G --> H[Email Generator LLM]
-    H --> I[Generated Email]
-    
-    J[Portfolio CSV] --> K[ChromaDB Vector Store]
-    K --> F
-    
-    L[Groq API] --> D
-    L --> H
-```
-
 ### **Data Flow**
 1. **Input Processing**: User provides job posting URL
 2. **Web Scraping**: Extract raw HTML content from the URL
@@ -167,34 +142,6 @@ graph TB
    - Enter a job posting URL (e.g., `https://jobs.nike.com/job/R-33460`)
    - Click "Submit" to generate the cold email
 
-### **Command Line Usage**
-
-```python
-from app.chains import Chain
-from app.portfolio import Portfolio
-from app.utils import clean_text
-from langchain_community.document_loaders import WebBaseLoader
-
-# Initialize components
-chain = Chain()
-portfolio = Portfolio()
-portfolio.load_portfolio()
-
-# Load and process job posting
-loader = WebBaseLoader(["https://jobs.nike.com/job/R-33460"])
-data = clean_text(loader.load().pop().page_content)
-
-# Extract job information
-jobs = chain.extract_jobs(data)
-
-# Generate email for each job
-for job in jobs:
-    skills = job.get('skills', [])
-    links = portfolio.query_links(skills)
-    email = chain.write_mail(job, links)
-    print(email)
-```
-
 ## 📁 Project Structure
 
 ```
@@ -222,39 +169,6 @@ cold-mail-generator/
 - **`app/utils.py`**: Text cleaning and preprocessing utilities
 - **`app/resource/my_portfolio.csv`**: Portfolio database with tech stacks and project links
 
-
-## 🎨 Customization
-
-### **Adding New Portfolio Projects**
-1. Edit `app/resource/my_portfolio.csv`
-2. Add new rows with format: `"Techstack","Links"`
-3. Restart the application to reload the vector database
-
-### **Modifying Email Templates**
-Edit the prompt template in `app/chains.py` in the `write_mail` method:
-
-```python
-prompt_email = PromptTemplate.from_template(
-    """
-    ### JOB DESCRIPTION:
-    {job_description}
-    
-    ### INSTRUCTION:
-    Your custom email generation instructions here...
-    """
-)
-```
-
-### **Changing AI Model**
-Modify the model in `app/chains.py`:
-
-```python
-self.llm = ChatGroq(
-    temperature=0, 
-    groq_api_key=os.getenv("GROQ_API_KEY"), 
-    model_name="llama-3.1-8b-instant"  # Change model here
-)
-```
 
 ### **Local Deployment**
 ```bash
@@ -289,7 +203,6 @@ pytest tests/
 - **Rate Limiting**: Implement rate limiting for production use
 - **Data Privacy**: No user data is stored permanently
 
-## 🐛 Troubleshooting
 
 ### **Common Issues**
 
